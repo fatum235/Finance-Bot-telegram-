@@ -26,6 +26,10 @@ AVAILABLE_CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CNY", "KZT", "TRY", "CHF"]
 CBRF_API_URL = 'https://www.cbr-xml-daily.ru/daily_json.js'
 
 
+def calculate_deposit(initial_sum, interest_rate, years):
+    return round(float(initial_sum) * (1 + float(interest_rate) / 100) ** float(years), 2)
+
+
 async def start_command(update, context):
     keyboard = [
         [InlineKeyboardButton("Рассчитать итоговую сумму вклада", callback_data="deposit")],
@@ -137,10 +141,6 @@ async def process_input(update, context):
             await update.message.reply_text(f"Ваш вклад вырастет до {final_amount} рублей.")
         except ValueError:
             await update.message.reply_text("Ошибка: введённые значения некорректны. Убедитесь, что ввели числа.")
-
-
-def calculate_deposit(initial_sum, interest_rate, years):
-    return round(float(initial_sum) * (1 + float(interest_rate) / 100) ** float(years), 2)
 
 
 def main():
