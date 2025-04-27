@@ -1,16 +1,6 @@
 import logging
-from telegram import ReplyKeyboardRemove, KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, \
-    InlineKeyboardMarkup
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    MessageHandler,
-    filters,
-    CallbackQueryHandler,
-    ConversationHandler,
-    ContextTypes,
-)
-
+from telegram import ReplyKeyboardRemove, KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackQueryHandler, ConversationHandler, ContextTypes
 import requests
 from datetime import date
 
@@ -49,14 +39,15 @@ async def button_callback(update, context):
 
     if query.data == "deposit":
         await query.edit_message_text(
-            "Напишите начальную сумму вклада, процент вклада и время, через которое вы хотите вывести деньги, через пробел.")
+            '''Напишите начальную сумму вклада, процент вклада и время, через которое вы хотите вывести деньги, 
+            через пробел.''')
 
     elif query.data == "feedback":
         await query.edit_message_text(
-            "Большое спасибо за то, что оставляете обратную связь!\nПросим Вас написать отзыв, максимально точно расписав весь Ваш опыт взаимодействия с ботом.")
-        context.user_data['awaiting_feedback'] = True  # Устанавливаем флаг ожидания отзыва
-
-    elif query.data == "exchange_rate":  # Начинаем процедуру обмена валют
+            '''Большое спасибо за то, что оставляете обратную связь!\nПросим Вас написать отзыв, максимально точно 
+            расписав весь Ваш опыт взаимодействия с ботом.''')
+        context.user_data['awaiting_feedback'] = True
+    elif query.data == "exchange_rate":
         await query.edit_message_text("Укажите валюту, из которой будете конвертировать (например, USD):")
         return GETTING_FIRST_CURRENCY
 
@@ -118,18 +109,20 @@ async def process_input(update, context):
 
 
     if 'awaiting_feedback' in context.user_data and context.user_data['awaiting_feedback']:
-        del context.user_data['awaiting_feedback']  # Сбрасываем флаг
+        del context.user_data['awaiting_feedback']
         feedback_text = f"Отзыв от пользователя {chat_id}:\n\n{message_text}"
         await context.bot.send_message(chat_id=ADMIN_ID, text=feedback_text)
         await update.message.reply_text(
-            f"Ваш отзыв уже отправлен модераторам. Все пожелания будут учтены в обновлениях.\nЕсли возникли сбои в работе бота, то наша поддержка обитает по адресу *{MAIL_ADDRESS}*",
+            f'''Ваш отзыв уже отправлен модераторам. Все пожелания будут учтены в обновлениях.\nЕсли возникли сбои 
+            в работе бота, то наша поддержка обитает по адресу *{MAIL_ADDRESS}*''',
             parse_mode="Markdown")
         return
 
     user_input = message_text.split()
     if len(user_input) != 3:
         await update.message.reply_text(
-            "Неправильный формат данных. Отправьте три числа через пробел: начальная сумма, процентная ставка и срок в годах.")
+            '''Неправильный формат данных. Отправьте три числа через пробел: начальная сумма, процентная ставка и срок 
+            в годах.''')
         return
     else:
         try:
@@ -147,12 +140,12 @@ def main():
     application = Application.builder().token(TOKEN).build()
 
     conversation_handler = ConversationHandler(
-        entry_points=[CallbackQueryHandler(button_callback)],  # Начало разговора по кнопке
+        entry_points=[CallbackQueryHandler(button_callback)],
         states={
             GETTING_FIRST_CURRENCY: [MessageHandler(filters.TEXT & ~filters.COMMAND, first_currency)],
             GETTING_SECOND_CURRENCY: [MessageHandler(filters.TEXT & ~filters.COMMAND, second_currency)],
         },
-        fallbacks=[CommandHandler('cancel', cancel)]  # Возможность отменить операцию
+        fallbacks=[CommandHandler('cancel', cancel)]
     )
 
     application.add_handler(conversation_handler)
